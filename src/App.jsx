@@ -5,6 +5,8 @@ import Auth from "./components/Auth";
 import About from "./components/About";
 import { Provider } from "react-redux";
 import store from "./utils/store";
+import Browse from "./components/Browse";
+import Footer from "./components/Footer";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -14,10 +16,14 @@ const App = () => {
         <>
           <Navbar />
           <Body />
-          <div>Footer</div>
+          <Footer />
         </>
       ),
       children: [
+        {
+          path: "/",
+          element: <Browse />,
+        },
         {
           path: "auth",
           element: <Auth />,

@@ -15,7 +15,10 @@
   font-family: "Roboto Mono", "Lucida Sans Regular", "Lucida Grande",
     "Lucida Sans Unicode", "Geneva", Verdana, sans-serif;
 }
-
+body {
+  background-color: black;
+  color: white;
+}
 @layer components {
   .max-container {
     max-width: 1440px;

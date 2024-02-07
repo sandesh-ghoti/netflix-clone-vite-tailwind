@@ -12,7 +12,7 @@ const Navbar = () => {
     navigate("/auth");
   };
   return (
-    <div className=" max-wide:max-w-screen-wide mx-auto flex flex-row justify-between items-center bg-gradient-to-b from-black to-white bg-opacity-60 px-3">
+    <div className="absolute top-0 left-0 z-50 w-full flex flex-row justify-between items-center bg-gradient-to-b from-black bg-opacity-60 px-3">
       <NavLink to="/">
         <div>
           <img
