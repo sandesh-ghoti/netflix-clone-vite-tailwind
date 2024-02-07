@@ -1,20 +1,23 @@
 import { useSelector, useDispatch } from "react-redux";
 import { addUser, removeUser } from "../utils/userSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useRef, useState } from "react";
 const Auth = () => {
+  console.log("Auth rendering....");
   const user = useSelector((state) => state.user);
   const [isSignedIn, setIsSignedIn] = useState(true);
   const formInput = useRef({});
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const desiredLocation = useLocation().pathname;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const { email, username } = formInput.current;
-    console.log(email, username);
     dispatch(!user ? addUser({ email, username }) : removeUser());
-    navigate("/");
+    navigate(
+      desiredLocation && desiredLocation != "/auth" ? desiredLocation : "/"
+    );
   };
   const handleInput = (e) => {
     formInput.current[e.target.name] = e.target.value;

@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import store from "./utils/store";
 import Browse from "./components/Browse";
 import Footer from "./components/Footer";
+import Card from "./components/Card";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -32,6 +33,11 @@ const App = () => {
           path: "about",
           element: <About />,
         },
+        {
+          path: "card",
+          element: <Card />,
+        },
+        { path: "*", element: <h1>404</h1> },
       ],
     },
   ]);
