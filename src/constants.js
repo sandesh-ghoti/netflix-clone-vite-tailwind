@@ -16,6 +16,9 @@ export const requests = {
   discover: `${BASE_URL}/discover`,
   search: `${BASE_URL}/search`,
   trending: `${BASE_URL}/trending`,
+  movie: `${BASE_URL}/movie`,
+  tv: `${BASE_URL}/tv`,
+  person: `${BASE_URL}/person`,
 };
 
 export const category = { tv: "tv", movie: "movie", person: "person" };

@@ -8,7 +8,10 @@ import store from "./utils/store";
 import Browse from "./components/Browse";
 import Footer from "./components/Footer";
 import Card from "./components/Card";
-
+import Watch from "./components/Watch";
+import MovieWatch from "./pages/MovieWatch";
+import TvSeriesWatch from "./pages/TvSeriesWatch";
+import PeopleWatch from "./pages/PeopleWatch";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -36,6 +39,15 @@ const App = () => {
         {
           path: "card",
           element: <Card />,
+        },
+        {
+          path: "watch",
+          element: <Watch />,
+          children: [
+            { path: "movie/:id", element: <MovieWatch /> },
+            { path: "tv/:id", element: <TvSeriesWatch /> },
+            { path: "people/:id", element: <PeopleWatch /> },
+          ],
         },
         { path: "*", element: <h1>404</h1> },
       ],

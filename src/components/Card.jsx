@@ -20,7 +20,7 @@ const Card = ({ data }) => {
   //   vote_average: 7,
   //   vote_count: 1434,
   // };
-  console.log(data);
+
   return (
     data && (
       <div className=" flex flex-col w-full h-full justify-center overflow-hidden bg-slate-700 bg-opacity-25 rounded-lg shadow-md shadow-gray-700">
