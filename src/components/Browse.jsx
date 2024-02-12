@@ -51,13 +51,13 @@ const Browse = () => {
       await fetchTrailer(fetchMovies);
     };
     fetchDetails();
-  }, []);
+  }, [dispatch]);
   function handlePageRedirect(card) {
     // console.log(card, `watch/${card.media_type}/${card.id}`);
     navigate(`watch/${card.media_type}/${card.id}`);
   }
   return (
-    <div className=" w-screen">
+    <div className=" w-full bg-gradient-to-r from-black">
       {randomVideo?.trailer && <Trailer randomVideo={randomVideo} />}
       <ul className="grid max-sm:grid-cols-2 max-md:grid-cols-3 max-lg:grid-cols-5 grid-cols-6 gap-5">
         {movies?.results?.map((data) => (

@@ -25,8 +25,8 @@ const Trailer = ({ randomVideo }) => {
           Watch Now
         </button>
       </div>
-      <div className="w-screen pointer-events-none">
-        <YtPlayer YTkey={randomVideo?.trailer?.key} />
+      <div className="w-full pointer-events-none">
+        <YtPlayer YTkey={randomVideo?.trailer?.key} autoplay={1} loop={1} />
       </div>
     </div>
   );

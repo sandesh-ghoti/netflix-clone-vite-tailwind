@@ -4,7 +4,8 @@ export const TMDB_ACCESS_TOKEN = process.env.TMDB_ACCESS_TOKEN;
 
 export const BASE_URL = "https://api.themoviedb.org/3";
 export const IMG_CDN_URL = "https://image.tmdb.org/t/p/w500";
-
+export const YT_THUMBNAIL_URL = "https://i.ytimg.com/vi/";
+//https://i.ytimg.com/vi/SzINZZ6iqxY/hqdefault.jpg
 export const SUPPORTED_LANGUAGES = [
   { identifier: "en", name: "English" },
   { identifier: "hindi", name: "Hindi" },
