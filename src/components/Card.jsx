@@ -2,7 +2,6 @@
 import { IMG_CDN_URL } from "../constants";
 import { IoStarHalfOutline } from "react-icons/io5";
 const Card = ({ data }) => {
-  console.log("card rendering...", data);
   // const data = {
   //   adult: false,
   //   backdrop_path: "/cnqwv5Uz3UW5f086IWbQKr3ksJr.jpg",

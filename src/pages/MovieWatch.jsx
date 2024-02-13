@@ -55,40 +55,49 @@ const MovieWatch = () => {
     fetchDetails();
     fetchVideos();
     fetchTeam();
+
     return () => {
       setSuggestions([]);
+      setMovie([]);
+      setNowPlaying(null);
+      setVideos(null);
+      setTeam(null);
     };
   }, [id]);
+  useEffect(() => {
+    async function fetchuggestion() {
+      console.log(movie, "movie", movie?.original_title);
+      let sugg = await getSuggestions("movie", movie?.original_title);
+      const regex = /^(?:[*-]\s*)?(.*?)(?:\s*\((\d{4})\))?$/gm;
+      let match;
+      const moviesWithYear = [];
+
+      while ((match = regex.exec(sugg)) !== null) {
+        const movie = {
+          name: match[1].trim(),
+          year: parseInt(match[2]),
+        };
+        moviesWithYear.push(movie);
+      }
+      const fetchPromises = moviesWithYear.map(async (movie) => {
+        const res = await fetch(
+          `${requests.search}/movie?query=${movie.name}&language=en-US&page=1&year=${movie.year}`,
+          options()
+        );
+        const data = await res.json();
+        return data.results[0];
+      });
+
+      const results = await Promise.all(fetchPromises);
+      setSuggestions(results.filter((result) => result));
+    }
+    fetchuggestion();
+  }, [movie]);
   function handleClick(key, autoplay = 1) {
     console.log("click", key);
     setNowPlaying({ key, autoplay });
   }
-  async function handleSuggestion() {
-    console.log(movie, "movie", movie?.original_title);
-    let sugg = await getSuggestions("movie", movie?.original_title);
-    const regex = /^(?:[*-]\s*)?(.*?)(?:\s*\((\d{4})\))?$/gm;
-    let match;
-    const moviesWithYear = [];
 
-    while ((match = regex.exec(sugg)) !== null) {
-      const movie = {
-        name: match[1].trim(),
-        year: parseInt(match[2]),
-      };
-      moviesWithYear.push(movie);
-    }
-    const fetchPromises = moviesWithYear.map(async (movie) => {
-      const res = await fetch(
-        `${requests.search}/movie?query=${movie.name}&language=en-US&page=1&year=${movie.year}`,
-        options()
-      );
-      const data = await res.json();
-      return data.results[0];
-    });
-
-    const results = await Promise.all(fetchPromises);
-    setSuggestions(results.filter((result) => result));
-  }
   function handleCardClick(newid) {
     console.log("card click", newid);
     navigate(`/watch/movie/${newid}`);
@@ -105,18 +114,20 @@ const MovieWatch = () => {
           <InfoBanner data={movie} />
         </div>
       )}
-      <button
+      {/* <button
         className="px-4 py-2 bg-blue-900 bg-opacity-35 rounded-md"
         onClick={handleSuggestion}
       >
         get suggestions
-      </button>
-      {team?.cast && (
+      </button> */}
+      {team?.cast?.length ? (
         <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
           Cast
         </div>
+      ) : (
+        ""
       )}
-      {team?.cast && (
+      {team?.cast?.length ? (
         <ul className="flex flex-row overflow-scroll h-96 w-full gap-3 max-md:h-56 max-lg:h-72">
           {team?.cast?.map((person) => {
             return (
@@ -137,13 +148,17 @@ const MovieWatch = () => {
             );
           })}
         </ul>
+      ) : (
+        ""
       )}
-      {team?.crew && (
+      {team?.crew?.length ? (
         <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
           Crew
         </div>
+      ) : (
+        ""
       )}
-      {team?.crew && (
+      {team?.crew?.length ? (
         <ul className="flex flex-row overflow-scroll h-96 w-full gap-3 max-md:h-56 max-lg:h-72">
           {team?.crew?.map((person) => {
             return (
@@ -164,6 +179,8 @@ const MovieWatch = () => {
             );
           })}
         </ul>
+      ) : (
+        ""
       )}
       {videos && (
         <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
@@ -183,7 +200,7 @@ const MovieWatch = () => {
           ))}
         </ul>
       )}
-      {suggestions.length ? (
+      {suggestions?.length ? (
         <div className="overflow-x-auto my-7">
           <div className=" w-full mx-auto flex flex-row flex-nowrap gap-4 sm:gap-8 md:gap-12 lg:gap-16">
             {suggestions?.map((suggestion) => {
