@@ -12,7 +12,6 @@ import Watch from "./components/Watch";
 import MovieWatch from "./pages/MovieWatch";
 import TvSeriesWatch from "./pages/TvSeriesWatch";
 import PeopleWatch from "./pages/PeopleWatch";
-import YoutubePlayer from "./components/YoutubePlayer";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -50,7 +49,6 @@ const App = () => {
             { path: "people/:id", element: <PeopleWatch /> },
           ],
         },
-        { path: "yt", element: <YoutubePlayer /> },
         { path: "*", element: <h1>404</h1> },
       ],
     },

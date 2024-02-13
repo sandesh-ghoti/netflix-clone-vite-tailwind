@@ -13,55 +13,55 @@ const TvSeriesWatch = () => {
   const [videos, setVideos] = useState(null);
   const [nowPlaying, setNowPlaying] = useState(null);
   const [team, setTeam] = useState(null);
-  async function fetchVideos() {
-    const response = await fetch(`${requests.tv}/${id}/videos`, options());
-    const allVideos = await response?.json();
-    setNowPlaying(
-      allVideos?.results.filter(
-        (video) =>
-          video.type === "Trailer" &&
-          video.key !== null &&
-          video.site.toLowerCase() === "YouTube".toLowerCase()
-      )[0]
-    );
-    const gotVideos = allVideos?.results
-      ?.filter(
-        (video) =>
-          video.key !== null &&
-          video.site.toLowerCase() === "YouTube".toLowerCase()
-      )
-      ?.reverse();
-    setVideos(gotVideos);
-    console.log(
-      "allVideos",
-      allVideos,
-      "nowPlaying",
-      allVideos?.results.filter(
-        (video) =>
-          video.type === "Trailer" &&
-          video.key !== null &&
-          video.site.toLowerCase() === "YouTube".toLowerCase()
-      )[0]
-    );
-  }
-  async function fetchDetails() {
-    const response = await fetch(`${requests.tv}/${id}`, options());
-    const details = await response?.json();
-    setTv(details);
-    console.log("details", details);
-  }
-  async function fetchTeam() {
-    const response = await fetch(`${requests.tv}/${id}/credits`, options());
-    const details = await response?.json();
-    setTeam(details);
-    console.log("team", details, team);
-  }
+
   useEffect(() => {
     //fetch tv of id
+    async function fetchVideos() {
+      const response = await fetch(`${requests.tv}/${id}/videos`, options());
+      const allVideos = await response?.json();
+      setNowPlaying(
+        allVideos?.results.filter(
+          (video) =>
+            video.type === "Trailer" &&
+            video.key !== null &&
+            video.site.toLowerCase() === "YouTube".toLowerCase()
+        )[0]
+      );
+      const gotVideos = allVideos?.results
+        ?.filter(
+          (video) =>
+            video.key !== null &&
+            video.site.toLowerCase() === "YouTube".toLowerCase()
+        )
+        ?.reverse();
+      setVideos(gotVideos);
+      console.log(
+        "allVideos",
+        allVideos,
+        "nowPlaying",
+        allVideos?.results.filter(
+          (video) =>
+            video.type === "Trailer" &&
+            video.key !== null &&
+            video.site.toLowerCase() === "YouTube".toLowerCase()
+        )[0]
+      );
+    }
+    async function fetchDetails() {
+      const response = await fetch(`${requests.tv}/${id}`, options());
+      const details = await response?.json();
+      setTv(details);
+      console.log("details", details);
+    }
+    async function fetchTeam() {
+      const response = await fetch(`${requests.tv}/${id}/credits`, options());
+      const details = await response?.json();
+      setTeam(details);
+    }
     fetchDetails();
     fetchVideos();
     fetchTeam();
-  }, []);
+  }, [id]);
   function handleClick(key, autoplay = 1) {
     console.log("click", key);
     setNowPlaying({ key, autoplay });

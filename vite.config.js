@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
       "process.env.TMDB_ACCESS_TOKEN": JSON.stringify(env.TMDB_ACCESS_TOKEN),
       "process.env.TMDB_API_KEY": JSON.stringify(env.TMDB_API_KEY),
       "process.env.YOUTUBE_API_KEY": JSON.stringify(env.YOUTUBE_API_KEY),
+      "process.env.GEMINI_API_KEY": JSON.stringify(env.GEMINI_API_KEY),
     },
     plugins: [react()],
   };

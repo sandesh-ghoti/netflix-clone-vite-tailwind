@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 export const TMDB_API_KEY = process.env.TMDB_API_KEY;
 export const TMDB_ACCESS_TOKEN = process.env.TMDB_ACCESS_TOKEN;
-
+export const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 export const BASE_URL = "https://api.themoviedb.org/3";
 export const IMG_CDN_URL = "https://image.tmdb.org/t/p/w500";
 export const YT_THUMBNAIL_URL = "https://i.ytimg.com/vi/";
