@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { options, requests } from "../constants";
-import { useParams, useNavigate } from "react-router-dom";
-import YtPlayer from "../components/YtPlayer";
-import CastCard from "../components/CastCard";
-import VideoCard from "../components/VideoCard";
-import InfoBanner from "../components/InfoBanner";
+import { useParams } from "react-router-dom";
+import {
+  YtPlayer,
+  StuffList,
+  InfoBanner,
+  CastList,
+  VideoCard,
+} from "../components";
 import getSuggestions from "../utils/geminiIntergration";
-import Card from "../components/Card";
+import { RiBardFill } from "react-icons/ri";
 const MovieWatch = () => {
   console.log("MovieWatch rendering...");
   const { id } = useParams();
@@ -15,7 +18,6 @@ const MovieWatch = () => {
   const [nowPlaying, setNowPlaying] = useState(null); //now playing video
   const [team, setTeam] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     //fetch movie of id
@@ -67,29 +69,16 @@ const MovieWatch = () => {
   useEffect(() => {
     async function fetchuggestion() {
       console.log(movie, "movie", movie?.original_title);
-      let sugg = await getSuggestions("movie", movie?.original_title);
-      const regex = /^(?:[*-]\s*)?(.*?)(?:\s*\((\d{4})\))?$/gm;
-      let match;
-      const moviesWithYear = [];
+      try {
+        if (!movie?.original_title) {
+          return;
+        }
+        let results = await getSuggestions("movie", movie?.original_title);
 
-      while ((match = regex.exec(sugg)) !== null) {
-        const movie = {
-          name: match[1].trim(),
-          year: parseInt(match[2]),
-        };
-        moviesWithYear.push(movie);
+        setSuggestions(results.filter((result) => result));
+      } catch (error) {
+        console.error("error at fetchSuggestion()", error);
       }
-      const fetchPromises = moviesWithYear.map(async (movie) => {
-        const res = await fetch(
-          `${requests.search}/movie?query=${movie.name}&language=en-US&page=1&year=${movie.year}`,
-          options()
-        );
-        const data = await res.json();
-        return data.results[0];
-      });
-
-      const results = await Promise.all(fetchPromises);
-      setSuggestions(results.filter((result) => result));
     }
     fetchuggestion();
   }, [movie]);
@@ -98,10 +87,6 @@ const MovieWatch = () => {
     setNowPlaying({ key, autoplay });
   }
 
-  function handleCardClick(newid) {
-    console.log("card click", newid);
-    navigate(`/watch/movie/${newid}`);
-  }
   return (
     <div className=" w-full">
       {nowPlaying && (
@@ -114,74 +99,18 @@ const MovieWatch = () => {
           <InfoBanner data={movie} />
         </div>
       )}
-      {/* <button
-        className="px-4 py-2 bg-blue-900 bg-opacity-35 rounded-md"
-        onClick={handleSuggestion}
-      >
-        get suggestions
-      </button> */}
-      {team?.cast?.length ? (
+      {team?.cast?.length && (
         <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
           Cast
         </div>
-      ) : (
-        ""
       )}
-      {team?.cast?.length ? (
-        <ul className="flex flex-row overflow-scroll h-96 w-full gap-3 max-md:h-56 max-lg:h-72">
-          {team?.cast?.map((person) => {
-            return (
-              person?.profile_path && (
-                <li
-                  key={person?.id}
-                  className="flex-shrink-0 w-28 md:w-40 lg:w-56"
-                >
-                  <CastCard
-                    data={{
-                      name: person?.name,
-                      character: person?.character,
-                      profile_path: person?.profile_path,
-                    }}
-                  />
-                </li>
-              )
-            );
-          })}
-        </ul>
-      ) : (
-        ""
-      )}
-      {team?.crew?.length ? (
+      {team?.cast?.length && <CastList list={team.cast} />}
+      {team?.crew?.length && (
         <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
           Crew
         </div>
-      ) : (
-        ""
       )}
-      {team?.crew?.length ? (
-        <ul className="flex flex-row overflow-scroll h-96 w-full gap-3 max-md:h-56 max-lg:h-72">
-          {team?.crew?.map((person) => {
-            return (
-              person?.profile_path && (
-                <li
-                  key={person?.credit_id}
-                  className="flex-shrink-0 w-28 md:w-40 lg:w-56"
-                >
-                  <CastCard
-                    data={{
-                      name: person?.name,
-                      character: person?.department + " - " + person?.job,
-                      profile_path: person?.profile_path,
-                    }}
-                  />
-                </li>
-              )
-            );
-          })}
-        </ul>
-      ) : (
-        ""
-      )}
+      {team?.crew?.length && <CastList list={team.crew} />}
       {videos && (
         <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
           Videos
@@ -201,21 +130,15 @@ const MovieWatch = () => {
         </ul>
       )}
       {suggestions?.length ? (
-        <div className="overflow-x-auto my-7">
-          <div className=" w-full mx-auto flex flex-row flex-nowrap gap-4 sm:gap-8 md:gap-12 lg:gap-16">
-            {suggestions?.map((suggestion) => {
-              return (
-                <div
-                  key={suggestion?.id}
-                  className="flex-none w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 xl:w-1/6"
-                  onClick={() => handleCardClick(suggestion?.id)}
-                >
-                  <Card data={suggestion} />
-                </div>
-              );
-            })}
+        <>
+          <div className="w-full flex flex-col md:flex-row items-center justify-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-2xl">
+            <span>Suggetions From Gemini</span>
+            <div className="ml-2 p-1 rounded-full bg-gradient-to-br from-purple-400 to-blue-500">
+              <RiBardFill />
+            </div>
           </div>
-        </div>
+          <StuffList list={suggestions} stuffType={"movie"} />
+        </>
       ) : (
         ""
       )}

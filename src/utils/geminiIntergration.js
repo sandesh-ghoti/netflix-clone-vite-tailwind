@@ -1,6 +1,6 @@
 // node --version # Should be >= 18
 // npm install @google/generative-ai
-import { GEMINI_API_KEY } from "../constants";
+import { GEMINI_API_KEY, options, requests } from "../constants";
 import {
   GoogleGenerativeAI,
   HarmCategory,
@@ -9,8 +9,7 @@ import {
 
 const MODEL_NAME = "gemini-pro";
 
-async function getSuggestions(media_type, name) {
-  console.log("getSuggestions", media_type, name);
+async function fetchSuggestion(media_type, name) {
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
@@ -54,5 +53,33 @@ async function getSuggestions(media_type, name) {
 
   const response = result.response;
   return response.text();
+}
+async function getSuggestions(media_type, name) {
+  let query = media_type;
+  if (media_type === "tv") {
+    query = "tv series";
+  }
+  let sugg = await fetchSuggestion(query, name);
+  const regex = /^(?:[*-]\s*)?(.*?)(?:\s*\((\d{4})\))?$/gm;
+  let match;
+  const moviesWithYear = [];
+  while ((match = regex.exec(sugg)) !== null) {
+    const movie = {
+      name: match[1]?.trim(),
+      year: parseInt(match[2]),
+    };
+    moviesWithYear.push(movie);
+  }
+  const fetchPromises = moviesWithYear.map(async (movie) => {
+    const res = await fetch(
+      `${requests.search}/${media_type}?query=${movie.name}&language=en-US&page=1&year=${movie.year}`,
+      options()
+    );
+    const data = await res.json();
+    return data.results[0];
+  });
+
+  const results = await Promise.all(fetchPromises);
+  return results.filter((result) => result);
 }
 export default getSuggestions;

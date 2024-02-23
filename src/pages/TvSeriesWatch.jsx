@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { options, requests } from "../constants";
-import { useNavigate, useParams } from "react-router-dom";
-import YtPlayer from "../components/YtPlayer";
-
-import CastCard from "../components/CastCard";
-import VideoCard from "../components/VideoCard";
-import InfoBanner from "../components/InfoBanner";
+import { useParams } from "react-router-dom";
+import {
+  YtPlayer,
+  StuffList,
+  InfoBanner,
+  CastList,
+  VideoCard,
+} from "../components";
 import getSuggestions from "../utils/geminiIntergration";
-import Card from "../components/Card";
+import { RiBardFill } from "react-icons/ri";
 const TvSeriesWatch = () => {
   console.log("TvSeriesWatch rendering...");
   const { id } = useParams();
@@ -16,7 +18,6 @@ const TvSeriesWatch = () => {
   const [nowPlaying, setNowPlaying] = useState(null);
   const [team, setTeam] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-  const navigate = useNavigate();
   useEffect(() => {
     //fetch tv of id
     async function fetchVideos() {
@@ -76,40 +77,21 @@ const TvSeriesWatch = () => {
   useEffect(() => {
     async function fetchSuggestion() {
       console.log(tv, "tv", tv?.original_name);
-      let sugg = await getSuggestions("tv series", tv?.original_name);
-      const regex = /^(?:[*-]\s*)?(.*?)(?:\s*\((\d{4})\))?$/gm;
-      let match;
-      const tvsWithYear = [];
-
-      while ((match = regex.exec(sugg)) !== null) {
-        const tv = {
-          name: match[1].trim(),
-          year: parseInt(match[2]),
-        };
-        tvsWithYear.push(tv);
+      try {
+        if (!tv?.original_name) {
+          return;
+        }
+        let results = await getSuggestions("tv", tv?.original_name);
+        setSuggestions(results.filter((result) => result));
+      } catch (error) {
+        console.error("error at fetchSuggestion()", error);
       }
-      const fetchPromises = tvsWithYear.map(async (tv) => {
-        const res = await fetch(
-          `${requests.search}/tv?query=${tv.name}&language=en-US&page=1&year=${tv.year}`,
-          options()
-        );
-        const data = await res.json();
-        return data.results[0];
-      });
-
-      const results = await Promise.all(fetchPromises);
-      setSuggestions(results.filter((result) => result));
     }
     fetchSuggestion();
   }, [tv]);
   function handleClick(key, autoplay = 1) {
     console.log("click", key);
     setNowPlaying({ key, autoplay });
-  }
-
-  function handleCardClick(newid) {
-    console.log("card click", newid);
-    navigate(`/watch/tv/${newid}`);
   }
   return (
     <div className=" w-full">
@@ -123,12 +105,6 @@ const TvSeriesWatch = () => {
           <InfoBanner data={tv} />
         </div>
       )}
-      {/* <button
-        className="px-4 py-2 bg-blue-900 bg-opacity-35 rounded-md"
-        onClick={handleSuggestion}
-      >
-        get suggestions
-      </button> */}
       {team?.cast?.length ? (
         <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
           Cast
@@ -136,65 +112,13 @@ const TvSeriesWatch = () => {
       ) : (
         ""
       )}
-      {team?.cast?.length ? (
-        <ul className="flex flex-row overflow-scroll h-96 w-full gap-3 max-md:h-56 max-lg:h-72">
-          {team?.cast?.map((person) => {
-            return (
-              person?.profile_path && (
-                <li
-                  key={person?.id}
-                  className="flex-shrink-0 w-28 md:w-40 lg:w-56"
-                >
-                  <CastCard
-                    data={{
-                      credit_id: person.credit_id,
-                      id: person.id,
-                      name: person?.name,
-                      character: person?.character,
-                      profile_path: person?.profile_path,
-                    }}
-                  />
-                </li>
-              )
-            );
-          })}
-        </ul>
-      ) : (
-        ""
-      )}
-      {team?.crew?.length ? (
+      {team?.cast?.length && <CastList list={team.cast} />}
+      {team?.crew?.length && (
         <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
           Crew
         </div>
-      ) : (
-        ""
       )}
-      {team?.crew?.length ? (
-        <ul className="flex flex-row overflow-scroll h-96 w-full gap-3 max-md:h-56 max-lg:h-72">
-          {team?.crew?.map((person) => {
-            return (
-              person?.profile_path && (
-                <li
-                  key={person?.credit_id}
-                  className="flex-shrink-0 w-28 md:w-40 lg:w-56"
-                >
-                  <CastCard
-                    data={{
-                      credit_id: person.credit_id,
-                      id: person.id,
-                      name: person?.name,
-                      character: person?.department + " - " + person?.job,
-                      profile_path: person?.profile_path,
-                    }}
-                  />
-                </li>
-              )
-            );
-          })}
-        </ul>
-      ) : (
-        ""
-      )}
+      {team?.crew?.length && <CastList list={team.crew} />}
       {videos?.length ? (
         <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
           Videos
@@ -218,21 +142,13 @@ const TvSeriesWatch = () => {
         ""
       )}
       {suggestions?.length ? (
-        <div className="overflow-x-auto my-7">
-          <div className=" w-full mx-auto flex flex-row flex-nowrap gap-4 sm:gap-8 md:gap-12 lg:gap-16">
-            {suggestions?.map((suggestion) => {
-              return (
-                <div
-                  key={suggestion?.id}
-                  className="flex-none w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 xl:w-1/6"
-                  onClick={() => handleCardClick(suggestion?.id)}
-                >
-                  <Card data={suggestion} />
-                </div>
-              );
-            })}
+        <>
+          <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl flex flex-row justify-center">
+            <span>Suggetions From Gemini</span>
+            <RiBardFill className="ml-2 p-1 rounded-full bg-gradient-to-br from-purple-400 to-blue-500" />
           </div>
-        </div>
+          <StuffList list={suggestions} stuffType={"tv"} />
+        </>
       ) : (
         ""
       )}
