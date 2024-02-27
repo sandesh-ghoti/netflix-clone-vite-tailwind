@@ -18,11 +18,16 @@ const MovieWatch = () => {
   const [nowPlaying, setNowPlaying] = useState(null); //now playing video
   const [team, setTeam] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-
+  const abortController = new AbortController();
+  const signal = abortController.signal;
   useEffect(() => {
     //fetch movie of id
     async function fetchVideos() {
-      const response = await fetch(`${requests.movie}/${id}/videos`, options());
+      const response = await fetch(
+        `${requests.movie}/${id}/videos`,
+        options(),
+        { signal }
+      );
       const allVideos = await response?.json();
       setNowPlaying(
         allVideos?.results.filter(
@@ -42,14 +47,17 @@ const MovieWatch = () => {
       setVideos(gotVideos);
     }
     async function fetchDetails() {
-      const response = await fetch(`${requests.movie}/${id}`, options());
+      const response = await fetch(`${requests.movie}/${id}`, options(), {
+        signal,
+      });
       const details = await response?.json();
       setMovie(details);
     }
     async function fetchTeam() {
       const response = await fetch(
         `${requests.movie}/${id}/credits`,
-        options()
+        options(),
+        { signal }
       );
       const details = await response?.json();
       setTeam(details);
@@ -59,6 +67,7 @@ const MovieWatch = () => {
     fetchTeam();
 
     return () => {
+      abortController.abort();
       setSuggestions([]);
       setMovie([]);
       setNowPlaying(null);
@@ -131,7 +140,7 @@ const MovieWatch = () => {
       )}
       {suggestions?.length ? (
         <>
-          <div className="w-full flex flex-col md:flex-row items-center justify-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-2xl">
+          <div className="w-full flex flex-row items-center justify-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-2xl">
             <span>Suggetions From Gemini</span>
             <div className="ml-2 p-1 rounded-full bg-gradient-to-br from-purple-400 to-blue-500">
               <RiBardFill />
