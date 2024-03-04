@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { options, requests } from "../constants";
+import { BASE_URL, options, requests } from "../constants";
 import { useParams } from "react-router-dom";
 import {
   YtPlayer,
@@ -18,15 +18,12 @@ const MovieWatch = () => {
   const [nowPlaying, setNowPlaying] = useState(null); //now playing video
   const [team, setTeam] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-  const abortController = new AbortController();
-  const signal = abortController.signal;
   useEffect(() => {
     //fetch movie of id
     async function fetchVideos() {
       const response = await fetch(
-        `${requests.movie}/${id}/videos`,
-        options(),
-        { signal }
+        `${BASE_URL}/${requests.movie}/${id}/videos`,
+        options()
       );
       const allVideos = await response?.json();
       setNowPlaying(
@@ -47,17 +44,17 @@ const MovieWatch = () => {
       setVideos(gotVideos);
     }
     async function fetchDetails() {
-      const response = await fetch(`${requests.movie}/${id}`, options(), {
-        signal,
-      });
+      const response = await fetch(
+        `${BASE_URL}/${requests.movie}/${id}`,
+        options()
+      );
       const details = await response?.json();
       setMovie(details);
     }
     async function fetchTeam() {
       const response = await fetch(
-        `${requests.movie}/${id}/credits`,
-        options(),
-        { signal }
+        `${BASE_URL}/${requests.movie}/${id}/credits`,
+        options()
       );
       const details = await response?.json();
       setTeam(details);
@@ -67,7 +64,6 @@ const MovieWatch = () => {
     fetchTeam();
 
     return () => {
-      abortController.abort();
       setSuggestions([]);
       setMovie([]);
       setNowPlaying(null);

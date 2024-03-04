@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { options, requests } from "../constants";
+import { BASE_URL, options, requests } from "../constants";
 import { useParams } from "react-router-dom";
 import {
   YtPlayer,
@@ -23,9 +23,13 @@ const TvSeriesWatch = () => {
   useEffect(() => {
     //fetch tv of id
     async function fetchVideos() {
-      const response = await fetch(`${requests.tv}/${id}/videos`, options(), {
-        signal,
-      });
+      const response = await fetch(
+        `${BASE_URL}/${requests.tv}/${id}/videos`,
+        options(),
+        {
+          signal,
+        }
+      );
       const allVideos = await response?.json();
       setNowPlaying(
         allVideos?.results.filter(
@@ -45,17 +49,25 @@ const TvSeriesWatch = () => {
       setVideos(gotVideos);
     }
     async function fetchDetails() {
-      const response = await fetch(`${requests.tv}/${id}`, options(), {
-        signal,
-      });
+      const response = await fetch(
+        `${BASE_URL}/${requests.tv}/${id}`,
+        options(),
+        {
+          signal,
+        }
+      );
       const details = await response?.json();
       setTv(details);
       console.log("details", details);
     }
     async function fetchTeam() {
-      const response = await fetch(`${requests.tv}/${id}/credits`, options(), {
-        signal,
-      });
+      const response = await fetch(
+        `${BASE_URL}/${requests.tv}/${id}/credits`,
+        options(),
+        {
+          signal,
+        }
+      );
       const details = await response?.json();
       setTeam(details);
     }

@@ -1,6 +1,6 @@
 // node --version # Should be >= 18
 // npm install @google/generative-ai
-import { GEMINI_API_KEY, options, requests } from "../constants";
+import { BASE_URL, GEMINI_API_KEY, options, requests } from "../constants";
 import {
   GoogleGenerativeAI,
   HarmCategory,
@@ -48,7 +48,7 @@ async function fetchSuggestion(media_type, name) {
   const result = await model.generateContent({
     contents: [{ role: "user", parts }],
     generationConfig,
-    safetySettings
+    safetySettings,
   });
 
   const response = result.response;
@@ -72,7 +72,7 @@ async function getSuggestions(media_type, name) {
   }
   const fetchPromises = moviesWithYear.map(async (movie) => {
     const res = await fetch(
-      `${requests.search}/${media_type}?query=${movie.name}&language=en-US&page=1&year=${movie.year}`,
+      `${BASE_URL}/${requests.search}/${media_type}?query=${movie.name}&language=en-US&page=1&year=${movie.year}`,
       options()
     );
     const data = await res.json();

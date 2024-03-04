@@ -2,10 +2,36 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const slice = createSlice({
   name: "tvShows",
-  initialState: null,
+  initialState: {
+    trending: { today: null, week: null },
+    airingToday: null,
+    onTheAir: null,
+    popular: null,
+    topRated: null,
+  },
   reducers: {
-    addTVShows: (state, action) => {
-      state = action.payload;
+    addTrending: (state, action) => {
+      if (action.payload.period === "today") {
+        state.trending.today = action.payload.data;
+      } else {
+        state.trending.week = action.payload.data;
+      }
+      return state;
+    },
+    addAiringToday: (state, action) => {
+      state.airingToday = action.payload.data;
+      return state;
+    },
+    addOTA: (state, action) => {
+      state.onTheAir = action.payload.data;
+      return state;
+    },
+    addPopular: (state, action) => {
+      state.popular = action.payload.data;
+      return state;
+    },
+    addTopRated: (state, action) => {
+      state.topRated = action.payload.data;
       return state;
     },
     removeTVShows: (state) => {
@@ -14,5 +40,12 @@ const slice = createSlice({
     },
   },
 });
-export const { addTVShows, removeTVShows } = slice.actions;
+export const {
+  addTrending,
+  addAiringToday,
+  addOTA,
+  addPopular,
+  addTopRated,
+  removeTVShows,
+} = slice.actions;
 export default slice.reducer;
