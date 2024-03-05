@@ -18,17 +18,12 @@ const TvSeriesWatch = () => {
   const [nowPlaying, setNowPlaying] = useState(null);
   const [team, setTeam] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-  const abortController = new AbortController();
-  const signal = abortController.signal;
   useEffect(() => {
     //fetch tv of id
     async function fetchVideos() {
       const response = await fetch(
         `${BASE_URL}/${requests.tv}/${id}/videos`,
-        options(),
-        {
-          signal,
-        }
+        options()
       );
       const allVideos = await response?.json();
       setNowPlaying(
@@ -51,10 +46,7 @@ const TvSeriesWatch = () => {
     async function fetchDetails() {
       const response = await fetch(
         `${BASE_URL}/${requests.tv}/${id}`,
-        options(),
-        {
-          signal,
-        }
+        options()
       );
       const details = await response?.json();
       setTv(details);
@@ -63,10 +55,7 @@ const TvSeriesWatch = () => {
     async function fetchTeam() {
       const response = await fetch(
         `${BASE_URL}/${requests.tv}/${id}/credits`,
-        options(),
-        {
-          signal,
-        }
+        options()
       );
       const details = await response?.json();
       setTeam(details);
@@ -76,7 +65,6 @@ const TvSeriesWatch = () => {
     fetchVideos();
     fetchTeam();
     return () => {
-      abortController.abort();
       setSuggestions([]);
       setNowPlaying(null);
       setVideos(null);
