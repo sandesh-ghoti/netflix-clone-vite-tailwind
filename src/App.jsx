@@ -1,18 +1,20 @@
-import Navbar from "./components/Navbar";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Body from "./components/Body";
-import Auth from "./components/Auth";
-import About from "./components/About";
 import { Provider } from "react-redux";
-import store from "./utils/store";
-import Browse from "./components/Browse";
-import Footer from "./components/Footer";
-import Card from "./components/Card";
-import Watch from "./components/Watch";
+import store from "./redux";
+import {
+  Navbar,
+  Body,
+  Auth,
+  Footer,
+  Browse,
+  About,
+  Card,
+  Watch,
+  SidePanel,
+} from "./components";
 import MovieWatch from "./pages/MovieWatch";
 import TvSeriesWatch from "./pages/TvSeriesWatch";
 import PeopleWatch from "./pages/PeopleWatch";
-import SidePanel from "./components/SidePanel";
 const App = () => {
   const router = createBrowserRouter([
     {

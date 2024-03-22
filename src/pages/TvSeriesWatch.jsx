@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BASE_URL, options, requests } from "../constants";
+import { requests } from "../constants";
 import { useParams } from "react-router-dom";
 import {
   YtPlayer,
@@ -10,31 +10,51 @@ import {
 } from "../components";
 import getSuggestions from "../utils/geminiIntergration";
 import { RiBardFill } from "react-icons/ri";
+import {
+  useGetCreditsQuery,
+  useGetDetailsQuery,
+  useGetVideosQuery,
+} from "../redux";
 const TvSeriesWatch = () => {
   console.log("TvSeriesWatch rendering...");
   const { id } = useParams();
-  const [tv, setTv] = useState(null);
   const [videos, setVideos] = useState(null);
   const [nowPlaying, setNowPlaying] = useState(null);
-  const [team, setTeam] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const {
+    data: tv,
+    error: tvError,
+    isFetching: isTvFetching,
+  } = useGetDetailsQuery({
+    media_type: `tv`,
+    id: id,
+  });
+  const {
+    data: videoData,
+    isLoading: isVideoDataFetching,
+    error: videoDataError,
+  } = useGetVideosQuery(
+    { media_type: `tv`, id: id } // Get movie ID if movies exist
+  );
+  const {
+    data: team,
+    isLoading: isTeamFetching,
+    error: teamError,
+  } = useGetCreditsQuery(
+    { media_type: `tv`, id: id } // Get movie ID if movies exist
+  );
   useEffect(() => {
     //fetch tv of id
     async function fetchVideos() {
-      const response = await fetch(
-        `${BASE_URL}/${requests.tv}/${id}/videos`,
-        options()
-      );
-      const allVideos = await response?.json();
       setNowPlaying(
-        allVideos?.results.filter(
+        videoData?.filter(
           (video) =>
             video.type === "Trailer" &&
             video.key !== null &&
             video.site.toLowerCase() === "YouTube".toLowerCase()
         )[0]
       );
-      const gotVideos = allVideos?.results
+      const gotVideos = videoData
         ?.filter(
           (video) =>
             video.key !== null &&
@@ -43,33 +63,12 @@ const TvSeriesWatch = () => {
         ?.reverse();
       setVideos(gotVideos);
     }
-    async function fetchDetails() {
-      const response = await fetch(
-        `${BASE_URL}/${requests.tv}/${id}`,
-        options()
-      );
-      const details = await response?.json();
-      setTv(details);
-      console.log("details", details);
-    }
-    async function fetchTeam() {
-      const response = await fetch(
-        `${BASE_URL}/${requests.tv}/${id}/credits`,
-        options()
-      );
-      const details = await response?.json();
-      setTeam(details);
-    }
 
-    fetchDetails();
     fetchVideos();
-    fetchTeam();
     return () => {
       setSuggestions([]);
       setNowPlaying(null);
       setVideos(null);
-      setTeam(null);
-      setTv(null);
     };
   }, [id]);
   useEffect(() => {
@@ -88,7 +87,6 @@ const TvSeriesWatch = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tv]);
   function handleClick(key, autoplay = 1) {
-    console.log("click", key);
     setNowPlaying({ key, autoplay });
   }
   return (

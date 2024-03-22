@@ -17,29 +17,68 @@ export const IMG_CONFIG = {
   still_sizes: ["w92", "w185", "w300", "original"],
 };
 export const SUPPORTED_LANGUAGES = [
-  { identifier: "en", name: "English" },
-  { identifier: "hindi", name: "Hindi" },
-  { identifier: "spanish", name: "Spanish" },
+  { identifier: "en-Us", name: "English" },
+  { identifier: "hn", name: "Hindi" },
+  { identifier: "es", name: "Spanish" },
 ];
-const getQuery = (path, queries = []) => {
-  let url = `${BASE_URL}${path}?api_key=${TMDB_API_KEY}`;
+export const getQuery = (path, queries = []) => {
+  let url = `${path}?api_key=${TMDB_API_KEY}`;
   queries.forEach((query) => {
     url += `&${query}`;
   });
   return url;
 };
 
-export async function fetchData(path, queries = []) {
-  try {
-    const query = getQuery(path, queries, (method = "GET"));
-    const http = await fetch(query, { method: method });
-    const jsonResult = await http?.json();
-    return jsonResult;
-  } catch (error) {
-    console.error(error);
-    await Promise.reject();
-  }
-}
+export const endpoints = {
+  trending: {
+    all: "trending",
+    week: {
+      movie: "trending/movie/week",
+      tv: "trending/tv/week",
+      people: "trending/people/week",
+    },
+    day: {
+      movie: "trending/movie/day",
+      tv: "trending/tv/day",
+      people: "trending/people/day",
+    },
+  },
+  top_rated: {
+    movie: "movie/top_rated",
+    tv: "tv/top_rated",
+  },
+  popular: {
+    movie: "movie/popular",
+    tv: "tv/popular",
+  },
+  now_playing: {
+    movie: "movie/now_playing",
+  },
+  upcoming: {
+    movie: "movie/upcoming",
+  },
+  on_the_air: {
+    tv: "tv/on_the_air",
+  },
+  airing_today: {
+    tv: "tv/airing_today",
+  },
+  search: "search/multi", //query=<search movie or tv>,
+  // similar:{ // ad
+  //   movie: "movie/${id}/similar",
+  //   tv: "tv/${id}/similar"
+  // },
+  // videos:{
+  //   movie: "movie/${id}/videos",
+  //   tv: "tv/${id}/videos"
+  // },
+  // credits:{
+  //   movie: "movie/${id}/credits",
+  //   tv: "tv/${id}/credits"
+  // }
+};
+
+export const media_type_enum = { movie: `movie`, tv: `tv`, person: `person` };
 export const requests = {
   auth: `authentication`,
   discover: `discover`,

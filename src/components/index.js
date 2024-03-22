@@ -17,7 +17,7 @@ import YtPlayer from "./YtPlayer";
 import MovieWatch from "../pages/MovieWatch";
 import PeopleWatch from "../pages/PeopleWatch";
 import TvSeriesWatch from "../pages/TvSeriesWatch";
-
+import SidePanel from "./SidePanel";
 export {
   About,
   Auth,
@@ -30,6 +30,7 @@ export {
   StuffList,
   CastCard,
   CastList,
+  SidePanel,
   Trailer,
   VideoCard,
   Watch,

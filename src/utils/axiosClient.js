@@ -5,8 +5,8 @@ import {
   removeItem,
   setItem,
 } from "./localStorageManager";
-import store from "./store";
-import { setLoading, showToast } from "./appConfigSlice";
+import store from "../redux";
+import { setLoading, showToast } from "../redux/appConfigSlice";
 export const TOAST_SUCCESS = "toast_success";
 export const TOAST_FAILURE = "toast_failure";
 import { BASE_URL, TMDB_ACCESS_TOKEN } from "../constants";

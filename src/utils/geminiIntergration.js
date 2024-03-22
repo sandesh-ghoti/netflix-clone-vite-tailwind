@@ -6,6 +6,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
+import axiosClient from "./axiosClient";
 
 const MODEL_NAME = "gemini-pro";
 
@@ -71,8 +72,8 @@ async function getSuggestions(media_type, name) {
     moviesWithYear.push(movie);
   }
   const fetchPromises = moviesWithYear.map(async (movie) => {
-    const res = await fetch(
-      `${BASE_URL}/${requests.search}/${media_type}?query=${movie.name}&language=en-US&page=1&year=${movie.year}`,
+    const res = await axiosClient(
+      `${requests.search}/${media_type}?query=${movie.name}&language=en-US&page=1&year=${movie.year}`,
       options()
     );
     const data = await res.json();

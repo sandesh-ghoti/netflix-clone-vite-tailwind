@@ -2,8 +2,8 @@
 import YtPlayer from "./YtPlayer";
 import { useNavigate } from "react-router-dom";
 
-const Trailer = ({ randomVideo }) => {
-  console.log(randomVideo, randomVideo?.trailer?.key);
+const Trailer = ({ videoKey, movieDetails }) => {
+  console.log(videoKey, movieDetails);
   const navigate = useNavigate();
   function handlePageRedirect(card) {
     // console.log(card, `watch/${card.media_type}/${card.id}`);
@@ -13,20 +13,20 @@ const Trailer = ({ randomVideo }) => {
     <div className="relative w-full h-full flex flex-col items-center">
       <div className="absolute left-7 bottom-7 flex flex-col  w-1/2 xl:w-96">
         <h1 className=" text-2xl text-violet-400 font-bold ">
-          {randomVideo?.movie?.title || randomVideo?.movie?.name}
+          {movieDetails?.title || movieDetails?.name}
         </h1>
         <p className="max-sm:hidden text-sm text-justify text-pretty text-slate-200">
-          {randomVideo?.movie?.overview}
+          {movieDetails?.overview}
         </p>
         <button
           className="mr-auto my-2 px-2 py-1 rounded-md border-none ring-1 bg-slate-800 bg-opacity-40"
-          onClick={() => handlePageRedirect(randomVideo?.movie)}
+          onClick={() => handlePageRedirect(movieDetails)}
         >
           Watch Now
         </button>
       </div>
       <div className="w-full pointer-events-none">
-        <YtPlayer YTkey={randomVideo?.trailer?.key} autoplay={1} loop={1} />
+        <YtPlayer YTkey={videoKey} autoplay={1} loop={1} />
       </div>
     </div>
   );

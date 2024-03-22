@@ -1,70 +1,72 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { addTrending } from "../utils/movieSlice";
-import { addTrending as tvAddTrending } from "../utils/tvSlice";
-import { BASE_URL, category, options, requests } from "../constants";
+import { requests } from "../constants";
 import Card from "./Card";
 import Trailer from "./Trailer";
+import axiosClient from "../utils/axiosClient";
+import {
+  useGetTrendingMoviesWeekQuery,
+  useGetTrendingTvsWeekQuery,
+  useGetVideosQuery,
+} from "../redux";
+
 const Browse = () => {
   console.log("Browse rendering...");
   // fetch movies, tvShows and trailer now trending and store into store
-  const dispatch = useDispatch();
-  const movies = useSelector((store) => store.movies);
-  const tvShows = useSelector((store) => store.tvShows);
+  const [randomMovie, setRandomMovie] = useState(null);
   const [randomVideo, setRandomVideo] = useState(null);
-  const navigate = useNavigate();
-  async function fetchTrailer(movies) {
-    // take random movie id from moviesSlice and fetch trailer
-    const choosen = Math.floor(Math.random() * movies?.results?.length);
-    const response = await fetch(
-      `${BASE_URL}/${requests.movie}/${movies?.results[choosen]?.id}/videos`,
-      options()
-    );
-    const video = await response?.json();
+  const {
+    data: movies,
+    error: movieError,
+    isFetching: isMovieFetching,
+  } = useGetTrendingMoviesWeekQuery({
+    params: { page: 1 },
+  });
+  const {
+    data: tvShows,
+    error: tvError,
+    isFetching: isTvFetching,
+  } = useGetTrendingTvsWeekQuery({
+    params: { page: 1 },
+  });
+  const {
+    data: trailerData,
+    isLoading: isTrailerFetching,
+    error: trailerError,
+  } = useGetVideosQuery(
+    { media_type: `movie`, id: randomMovie?.id } // Get movie ID if movies exist
+  );
 
-    setRandomVideo({
-      movie: movies?.results[choosen],
-      trailer: video?.results.filter(
+  const navigate = useNavigate();
+  async function fetchRandom(movies) {
+    // take random movie id from moviesSlice and fetch trailer
+    const choosen = Math.floor(Math.random() * movies?.length);
+    setRandomMovie(movies[choosen]);
+  }
+  useEffect(() => {
+    movies && fetchRandom(movies);
+  }, [movies]);
+  useEffect(() => {
+    setRandomVideo(
+      trailerData?.filter(
         (video) =>
           video.type === "Trailer" &&
           video.key !== null &&
           video.site.toLowerCase() === "YouTube".toLowerCase()
-      )[0],
-    });
-  }
-  useEffect(() => {
-    const fetchDetails = async () => {
-      let fetchMovies = await fetch(
-        BASE_URL + "/" + requests.trending + "/" + category.movie + "/week",
-        options()
-      );
-      fetchMovies = await fetchMovies?.json();
-      let fetchTVShows = await fetch(
-        BASE_URL + "/" + requests.trending + "/" + category.tv + "/week",
-        options()
-      );
-      fetchTVShows = await fetchTVShows?.json();
-      console.log(fetchMovies, fetchTVShows);
-      dispatch(
-        fetchMovies && addTrending({ data: fetchMovies, period: "week" })
-      );
-      dispatch(
-        fetchTVShows && tvAddTrending({ data: fetchTVShows, period: "week" })
-      );
-      await fetchTrailer(fetchMovies);
-    };
-    fetchDetails();
-  }, [dispatch]);
+      )[0]
+    );
+  }, [trailerData]);
   function handlePageRedirect(card) {
     // console.log(card, `watch/${card.media_type}/${card.id}`);
     navigate(`watch/${card.media_type}/${card.id}`);
   }
   return (
     <div className=" w-full bg-gradient-to-r from-black">
-      {randomVideo?.trailer && <Trailer randomVideo={randomVideo} />}
+      {randomVideo && (
+        <Trailer videoKey={randomVideo?.key} movieDetails={randomMovie} />
+      )}
       <ul className="grid max-sm:grid-cols-2 max-md:grid-cols-3 max-lg:grid-cols-5 grid-cols-6 gap-5">
-        {movies?.trending?.week?.results?.map((data) => (
+        {movies?.map((data) => (
           <li
             key={data?.id}
             onClick={() =>
@@ -75,7 +77,7 @@ const Browse = () => {
           </li>
         ))}
         Tv shows:
-        {tvShows?.trending?.week?.results?.map((data) => (
+        {tvShows?.map((data) => (
           <li
             key={data?.id}
             onClick={() =>

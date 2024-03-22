@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BASE_URL, options, requests } from "../constants";
+import { requests } from "../constants";
 import { useParams } from "react-router-dom";
 import {
   YtPlayer,
@@ -10,6 +10,7 @@ import {
 } from "../components";
 import getSuggestions from "../utils/geminiIntergration";
 import { RiBardFill } from "react-icons/ri";
+import axiosClient from "../utils/axiosClient";
 const MovieWatch = () => {
   console.log("MovieWatch rendering...");
   const { id } = useParams();
@@ -21,11 +22,8 @@ const MovieWatch = () => {
   useEffect(() => {
     //fetch movie of id
     async function fetchVideos() {
-      const response = await fetch(
-        `${BASE_URL}/${requests.movie}/${id}/videos`,
-        options()
-      );
-      const allVideos = await response?.json();
+      const response = await axiosClient(`${requests.movie}/${id}/videos`);
+      const allVideos = response?.data;
       setNowPlaying(
         allVideos?.results.filter(
           (video) =>
@@ -44,19 +42,13 @@ const MovieWatch = () => {
       setVideos(gotVideos);
     }
     async function fetchDetails() {
-      const response = await fetch(
-        `${BASE_URL}/${requests.movie}/${id}`,
-        options()
-      );
-      const details = await response?.json();
+      const response = await axiosClient(`${requests.movie}/${id}`);
+      const details = response?.data;
       setMovie(details);
     }
     async function fetchTeam() {
-      const response = await fetch(
-        `${BASE_URL}/${requests.movie}/${id}/credits`,
-        options()
-      );
-      const details = await response?.json();
+      const response = await axiosClient(`${requests.movie}/${id}/credits`);
+      const details = response?.data;
       setTeam(details);
     }
     fetchDetails();

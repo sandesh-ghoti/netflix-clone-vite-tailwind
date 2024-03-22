@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
-import { removeUser } from "../utils/userSlice";
+import { removeUser } from "../redux/userSlice";
 const Navbar = () => {
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();

@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { addUser, removeUser } from "../utils/userSlice";
+import { addUser, removeUser } from "../redux/userSlice";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useRef, useState } from "react";
 const Auth = () => {
