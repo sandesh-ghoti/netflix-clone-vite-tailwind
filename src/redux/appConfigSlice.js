@@ -5,7 +5,7 @@ export const getMyInfo = createAsyncThunk("user/getMyInfo", async () => {
   try {
     const response = await axiosClient.get("user/getUserInfo");
     console.log(response);
-    return response.result;
+    return response.data;
   } catch (e) {
     return Promise.reject(e);
   }
@@ -17,7 +17,7 @@ export const updateProfile = createAsyncThunk(
     try {
       const response = await axiosClient.put("user/updateProfile", body);
       console.log(response);
-      return response.result;
+      return response.data;
     } catch (e) {
       return Promise.reject(e);
     }

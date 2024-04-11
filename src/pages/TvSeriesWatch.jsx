@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { requests } from "../constants";
+import { useEffect, useRef, useState } from "react";
+import { media_type_enum, requests } from "../constants";
 import { useParams } from "react-router-dom";
 import {
   YtPlayer,
@@ -14,61 +14,61 @@ import {
   useGetCreditsQuery,
   useGetDetailsQuery,
   useGetVideosQuery,
+  useGetSimilarQuery,
 } from "../redux";
 const TvSeriesWatch = () => {
   console.log("TvSeriesWatch rendering...");
   const { id } = useParams();
-  const [videos, setVideos] = useState(null);
   const [nowPlaying, setNowPlaying] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const scrollRef = useRef(null);
   const {
     data: tv,
     error: tvError,
     isFetching: isTvFetching,
   } = useGetDetailsQuery({
-    media_type: `tv`,
+    media_type: media_type_enum.tv,
     id: id,
   });
-  const {
-    data: videoData,
-    isLoading: isVideoDataFetching,
-    error: videoDataError,
+  let {
+    data: videos,
+    isLoading: isVideoFetching,
+    error: videoError,
   } = useGetVideosQuery(
-    { media_type: `tv`, id: id } // Get movie ID if movies exist
+    { media_type: media_type_enum.tv, id: id } // Get tv ID if movies exist
   );
   const {
     data: team,
     isLoading: isTeamFetching,
     error: teamError,
   } = useGetCreditsQuery(
-    { media_type: `tv`, id: id } // Get movie ID if movies exist
+    { media_type: media_type_enum.tv, id: id } // Get tv ID if movies exist
   );
+  const {
+    data: similar,
+    error: similarError,
+    isFetching: isSimilarFetching,
+  } = useGetSimilarQuery({ media_type: media_type_enum.movie, id: id });
   useEffect(() => {
     //fetch tv of id
-    async function fetchVideos() {
-      setNowPlaying(
-        videoData?.filter(
-          (video) =>
-            video.type === "Trailer" &&
-            video.key !== null &&
-            video.site.toLowerCase() === "YouTube".toLowerCase()
-        )[0]
-      );
-      const gotVideos = videoData
-        ?.filter(
-          (video) =>
-            video.key !== null &&
-            video.site.toLowerCase() === "YouTube".toLowerCase()
-        )
-        ?.reverse();
-      setVideos(gotVideos);
-    }
-
-    fetchVideos();
+    setNowPlaying(
+      videos?.filter(
+        (video) =>
+          video.type === "Trailer" &&
+          video.key !== null &&
+          video.site.toLowerCase() === "YouTube".toLowerCase()
+      )[0]
+    );
+    videos = videos
+      ?.filter(
+        (video) =>
+          video.key !== null &&
+          video.site.toLowerCase() === "YouTube".toLowerCase()
+      )
+      ?.reverse();
     return () => {
       setSuggestions([]);
       setNowPlaying(null);
-      setVideos(null);
     };
   }, [id]);
   useEffect(() => {
@@ -86,6 +86,14 @@ const TvSeriesWatch = () => {
     fetchSuggestion();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tv]);
+  useEffect(() => {
+    // Reset scroll position when component mounts
+    console.log("unmounting component and restoring scroll position");
+    window.scrollTo(0, 0);
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = 0;
+    }
+  }, [id]);
   function handleClick(key, autoplay = 1) {
     setNowPlaying({ key, autoplay });
   }
@@ -101,43 +109,44 @@ const TvSeriesWatch = () => {
           <InfoBanner data={tv} />
         </div>
       )}
-      {team?.cast?.length ? (
-        <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
-          Cast
-        </div>
-      ) : (
-        ""
+      {team?.cast?.length > 0 && (
+        <>
+          <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
+            Cast
+          </div>
+          <CastList list={team.cast} />
+        </>
       )}
-      {team?.cast?.length && <CastList list={team.cast} />}
-      {team?.crew?.length && (
-        <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
-          Crew
-        </div>
+      {team?.crew?.length > 0 && (
+        <>
+          <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
+            Crew
+          </div>
+          <CastList list={team.crew} />
+        </>
       )}
-      {team?.crew?.length && <CastList list={team.crew} />}
-      {videos?.length ? (
-        <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
-          Videos
-        </div>
-      ) : (
-        ""
+      {videos?.length > 0 && (
+        <>
+          <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
+            Videos
+          </div>
+          <ul
+            className="flex flex-row overflow-scroll w-full h-48 gap-3 max-md:h-28"
+            ref={scrollRef}
+          >
+            {videos?.map((video) => (
+              <li
+                className="h-full aspect-video flex-shrink-0"
+                key={video?.key}
+                onClick={() => handleClick(video?.key)}
+              >
+                <VideoCard ytKey={video?.key} videoName={video?.name} />
+              </li>
+            ))}
+          </ul>
+        </>
       )}
-      {videos?.length ? (
-        <ul className="flex flex-row overflow-scroll w-full h-48 gap-3 max-md:h-28">
-          {videos?.map((video) => (
-            <li
-              className="h-full aspect-video flex-shrink-0"
-              key={video?.key}
-              onClick={() => handleClick(video?.key)}
-            >
-              <VideoCard ytKey={video?.key} videoName={video?.name} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        ""
-      )}
-      {suggestions?.length ? (
+      {suggestions?.length > 0 && (
         <>
           <div className="w-full flex flex-row items-center justify-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-2xl">
             <span>Suggetions From Gemini</span>
@@ -145,8 +154,14 @@ const TvSeriesWatch = () => {
           </div>
           <StuffList list={suggestions} stuffType={"tv"} />
         </>
-      ) : (
-        ""
+      )}
+      {similar && (
+        <>
+          <div className="w-full flex flex-row items-center justify-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-2xl">
+            <span>Similar to this</span>
+          </div>
+          <StuffList list={similar} stuffType={media_type_enum.tv} />
+        </>
       )}
     </div>
   );

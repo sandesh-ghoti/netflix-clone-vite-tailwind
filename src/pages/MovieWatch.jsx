@@ -1,71 +1,69 @@
-import { useEffect, useState } from "react";
-import { requests } from "../constants";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { media_type_enum } from "../constants";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   YtPlayer,
   StuffList,
   InfoBanner,
   CastList,
   VideoCard,
+  Card,
+  CastCard,
 } from "../components";
 import getSuggestions from "../utils/geminiIntergration";
 import { RiBardFill } from "react-icons/ri";
-import axiosClient from "../utils/axiosClient";
-const MovieWatch = () => {
-  console.log("MovieWatch rendering...");
-  const { id } = useParams();
-  const [movie, setMovie] = useState(null);
-  const [videos, setVideos] = useState(null);
-  const [nowPlaying, setNowPlaying] = useState(null); //now playing video
-  const [team, setTeam] = useState(null);
-  const [suggestions, setSuggestions] = useState([]);
-  useEffect(() => {
-    //fetch movie of id
-    async function fetchVideos() {
-      const response = await axiosClient(`${requests.movie}/${id}/videos`);
-      const allVideos = response?.data;
-      setNowPlaying(
-        allVideos?.results.filter(
-          (video) =>
-            video.type === "Trailer" &&
-            video.key !== null &&
-            video.site.toLowerCase() === "YouTube".toLowerCase()
-        )[0]
-      );
-      const gotVideos = allVideos?.results
-        ?.filter(
-          (video) =>
-            video.key !== null &&
-            video.site.toLowerCase() === "YouTube".toLowerCase()
-        )
-        ?.reverse();
-      setVideos(gotVideos);
-    }
-    async function fetchDetails() {
-      const response = await axiosClient(`${requests.movie}/${id}`);
-      const details = response?.data;
-      setMovie(details);
-    }
-    async function fetchTeam() {
-      const response = await axiosClient(`${requests.movie}/${id}/credits`);
-      const details = response?.data;
-      setTeam(details);
-    }
-    fetchDetails();
-    fetchVideos();
-    fetchTeam();
+import {
+  useGetCreditsQuery,
+  useGetDetailsQuery,
+  useGetVideosQuery,
+  useGetSimilarQuery,
+} from "../redux/";
 
-    return () => {
-      setSuggestions([]);
-      setMovie([]);
-      setNowPlaying(null);
-      setVideos(null);
-      setTeam(null);
-    };
-  }, [id]);
+const MovieWatch = () => {
+  const { id } = useParams();
+  const [nowPlaying, setNowPlaying] = useState(null); //now playing video
+  const [suggestions, setSuggestions] = useState("");
+  const scrollRef = useRef(null);
+  const {
+    data: movie,
+    error: movieError,
+    isFetching: isMovieFetching,
+  } = useGetDetailsQuery({ media_type: media_type_enum.movie, id: id });
+  const {
+    data: team,
+    error: teamError,
+    isFetching: isTeamFetching,
+  } = useGetCreditsQuery({ media_type: media_type_enum.movie, id: id });
+  let {
+    data: videos,
+    error: videosError,
+    isFetching: isVideosFetching,
+  } = useGetVideosQuery({ media_type: media_type_enum.movie, id: id });
+  const {
+    data: similar,
+    error: similarError,
+    isFetching: isSimilarFetching,
+  } = useGetSimilarQuery({ media_type: media_type_enum.movie, id: id });
   useEffect(() => {
+    setNowPlaying(
+      videos?.filter(
+        (video) =>
+          video.type === "Trailer" &&
+          video.key !== null &&
+          video.site.toLowerCase() === "YouTube".toLowerCase()
+      )[0]
+    );
+    videos = videos
+      ?.filter(
+        (video) =>
+          video.key !== null &&
+          video.site.toLowerCase() === "YouTube".toLowerCase()
+      )
+      ?.reverse();
+  }, [videos]);
+  useEffect(() => {
+    // fetch suggestions from gemini
     async function fetchuggestion() {
-      console.log(movie, "movie", movie?.original_title);
       try {
         if (!movie?.original_title) {
           return;
@@ -79,11 +77,25 @@ const MovieWatch = () => {
     }
     fetchuggestion();
   }, [movie]);
+  useEffect(() => {
+    return () => {
+      setSuggestions([]);
+      setNowPlaying(null);
+    };
+  }, []);
+
   function handleClick(key, autoplay = 1) {
-    console.log("click", key);
+    // set now playing video key
     setNowPlaying({ key, autoplay });
   }
+  useEffect(() => {
+    // Reset scroll position when component mounts
 
+    window.scrollTo(0, 0);
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = 0;
+    }
+  }, [id]);
   return (
     <div className=" w-full">
       {nowPlaying && (
@@ -96,51 +108,108 @@ const MovieWatch = () => {
           <InfoBanner data={movie} />
         </div>
       )}
-      {team?.cast?.length && (
-        <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
-          Cast
-        </div>
+      {team?.cast?.length > 0 && (
+        <MapList
+          children={<span>Cast</span>}
+          list={team.cast}
+          Card={CastCard}
+          media_type={media_type_enum.person}
+        />
       )}
-      {team?.cast?.length && <CastList list={team.cast} />}
-      {team?.crew?.length && (
-        <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
-          Crew
-        </div>
+      {team?.crew?.length > 0 && (
+        <MapList
+          children={<span>Crew</span>}
+          list={team.crew}
+          Card={CastCard}
+          media_type={media_type_enum.person}
+        />
       )}
-      {team?.crew?.length && <CastList list={team.crew} />}
-      {videos && (
-        <div className="w-full text-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-3xl">
-          Videos
-        </div>
+      {videos?.length > 0 && (
+        <MapList
+          children={<span>Videos</span>}
+          list={videos}
+          Card={VideoCard}
+          redirect={false}
+          onClick={(key) => {
+            setNowPlaying({ key, autoplay: 1 });
+          }}
+        />
       )}
-      {videos && (
-        <ul className="flex flex-row overflow-scroll w-full h-48 gap-3 max-md:h-28">
-          {videos?.map((video) => (
-            <li
-              className="h-full aspect-video flex-shrink-0"
-              key={video?.key}
-              onClick={() => handleClick(video?.key)}
-            >
-              <VideoCard ytKey={video?.key} videoName={video?.name} />
-            </li>
-          ))}
-        </ul>
+      {suggestions?.length > 0 && (
+        <MapList
+          children={
+            <>
+              <span>Suggetions From Gemini</span>
+              <div className="ml-2 p-1 rounded-full bg-gradient-to-br from-purple-400 to-blue-500">
+                <RiBardFill />
+              </div>
+            </>
+          }
+          list={suggestions}
+          Card={Card}
+          media_type={media_type_enum.movie}
+        />
       )}
-      {suggestions?.length ? (
-        <>
-          <div className="w-full flex flex-row items-center justify-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-2xl">
-            <span>Suggetions From Gemini</span>
-            <div className="ml-2 p-1 rounded-full bg-gradient-to-br from-purple-400 to-blue-500">
-              <RiBardFill />
-            </div>
-          </div>
-          <StuffList list={suggestions} stuffType={"movie"} />
-        </>
-      ) : (
-        ""
+      {similar && (
+        <MapList
+          children={<span>Similar to this</span>}
+          list={similar}
+          Card={Card}
+          media_type={media_type_enum.movie}
+        />
       )}
     </div>
   );
 };
 
 export default MovieWatch;
+
+const MapList = ({
+  children = <></>,
+  list,
+  Card,
+  media_type = "video",
+  redirect = true,
+  onClick = null,
+}) => {
+  const navigate = useNavigate();
+  const ref = useRef(null);
+  function handleCardClick(item) {
+    if (onClick) {
+      console.log("setting video now playing", item?.key);
+      onClick(item?.key);
+    }
+    if (!redirect) {
+      return;
+    }
+    navigate(`/watch/${media_type}/${item.id}`);
+  }
+  useEffect(() => {
+    return () => {
+      if (ref.current) {
+        ref.current.scrollLeft = 0;
+      }
+    };
+  }, [list]);
+  return (
+    <>
+      <div className="w-full flex flex-row items-center justify-center text-4xl font-bold text-zinc-200 my-5 py-5 max-md:py-2 max-md:my-2 max-md:text-2xl">
+        {children}
+      </div>
+      <ul
+        className="flex flex-row overflow-scroll w-full gap-4 sm:gap-6 md:gap-8 lg:gap-12 "
+        ref={ref}
+      >
+        {list?.map((item) => (
+          <li
+            key={item?.credit_id || item?.id}
+            className="flex-none w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 xl:w-1/6"
+            onClick={() => handleCardClick(item)}
+          >
+            <Card data={item} media_type={media_type} />
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
