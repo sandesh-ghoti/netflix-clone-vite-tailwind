@@ -12,9 +12,9 @@ import {
   Watch,
   SidePanel,
 } from "./components";
-import MovieWatch from "./pages/MovieWatch";
-import TvSeriesWatch from "./pages/TvSeriesWatch";
+import DetailsPage from "./pages/DetailsPage";
 import PeopleWatch from "./pages/PeopleWatch";
+import { media_type_enum } from "./constants";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -47,9 +47,15 @@ const App = () => {
           path: "watch",
           element: <Watch />,
           children: [
-            { path: "movie/:id", element: <MovieWatch /> },
-            { path: "tv/:id", element: <TvSeriesWatch /> },
-            { path: "people/:id", element: <PeopleWatch /> },
+            {
+              path: "movie/:id",
+              element: <DetailsPage media_type={media_type_enum.movie} />,
+            },
+            {
+              path: "tv/:id",
+              element: <DetailsPage media_type={media_type_enum.tv} />,
+            },
+            { path: "person/:id", element: <PeopleWatch /> },
           ],
         },
         { path: "sidepanel", element: <SidePanel /> },

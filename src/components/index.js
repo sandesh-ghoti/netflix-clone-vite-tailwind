@@ -4,19 +4,16 @@ import Body from "./Body";
 import Browse from "./Browse";
 import Card from "./Card";
 import CastCard from "./CastCard";
-import CastList from "./CastList";
 import Footer from "./Footer";
 import InfoBanner from "./InfoBanner";
 import Navbar from "./Navbar";
-import StuffList from "./StuffList";
 import Trailer from "./Trailer";
 import VideoCard from "./VideoCard";
 import Watch from "./Watch";
 import YtPlayer from "./YtPlayer";
 
-import MovieWatch from "../pages/MovieWatch";
+import DetailsPage from "../pages/DetailsPage";
 import PeopleWatch from "../pages/PeopleWatch";
-import TvSeriesWatch from "../pages/TvSeriesWatch";
 import SidePanel from "./SidePanel";
 export {
   About,
@@ -27,15 +24,12 @@ export {
   Footer,
   InfoBanner,
   Navbar,
-  StuffList,
   CastCard,
-  CastList,
   SidePanel,
   Trailer,
   VideoCard,
   Watch,
   YtPlayer,
-  MovieWatch,
+  DetailsPage,
   PeopleWatch,
-  TvSeriesWatch,
 };

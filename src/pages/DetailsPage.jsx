@@ -1,15 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { media_type_enum } from "../constants";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  YtPlayer,
-  StuffList,
-  InfoBanner,
-  CastList,
-  VideoCard,
-  Card,
-  CastCard,
-} from "../components";
+import { YtPlayer, InfoBanner, VideoCard, Card, CastCard } from "../components";
 import getSuggestions from "../utils/geminiIntergration";
 import { RiBardFill } from "react-icons/ri";
 import {
@@ -17,33 +9,33 @@ import {
   useGetDetailsQuery,
   useGetVideosQuery,
   useGetSimilarQuery,
-} from "../redux/";
+} from "../redux";
 
-const MovieWatch = () => {
+const DetailsPage = ({ media_type }) => {
   const { id } = useParams();
   const [nowPlaying, setNowPlaying] = useState(null); //now playing video
   const [suggestions, setSuggestions] = useState("");
   const scrollRef = useRef(null);
   const {
-    data: movie,
-    error: movieError,
-    isFetching: isMovieFetching,
-  } = useGetDetailsQuery({ media_type: media_type_enum.movie, id: id });
+    data: data,
+    error: dataError,
+    isFetching: isdataFetching,
+  } = useGetDetailsQuery({ media_type, id: id });
   const {
     data: team,
     error: teamError,
     isFetching: isTeamFetching,
-  } = useGetCreditsQuery({ media_type: media_type_enum.movie, id: id });
+  } = useGetCreditsQuery({ media_type, id: id });
   let {
     data: videos,
     error: videosError,
     isFetching: isVideosFetching,
-  } = useGetVideosQuery({ media_type: media_type_enum.movie, id: id });
+  } = useGetVideosQuery({ media_type, id: id });
   const {
     data: similar,
     error: similarError,
     isFetching: isSimilarFetching,
-  } = useGetSimilarQuery({ media_type: media_type_enum.movie, id: id });
+  } = useGetSimilarQuery({ media_type, id: id });
   useEffect(() => {
     setNowPlaying(
       videos?.filter(
@@ -64,19 +56,23 @@ const MovieWatch = () => {
   useEffect(() => {
     // fetch suggestions from gemini
     async function fetchuggestion() {
+      console.log("suggestions fetching");
       try {
-        if (!movie?.original_title) {
+        if (!data?.original_title && !data?.original_name) {
           return;
         }
-        let results = await getSuggestions("movie", movie?.original_title);
-
+        let results = await getSuggestions(
+          media_type,
+          data?.original_title || data?.original_name
+        );
+        console.log("suggestions fetched", results);
         setSuggestions(results.filter((result) => result));
       } catch (error) {
         console.error("error at fetchSuggestion()", error);
       }
     }
     fetchuggestion();
-  }, [movie]);
+  }, [data]);
   useEffect(() => {
     return () => {
       setSuggestions([]);
@@ -84,10 +80,6 @@ const MovieWatch = () => {
     };
   }, []);
 
-  function handleClick(key, autoplay = 1) {
-    // set now playing video key
-    setNowPlaying({ key, autoplay });
-  }
   useEffect(() => {
     // Reset scroll position when component mounts
 
@@ -103,9 +95,9 @@ const MovieWatch = () => {
           <YtPlayer YTkey={nowPlaying?.key} autoplay={nowPlaying?.autoplay} />
         </div>
       )}
-      {movie && (
+      {data && (
         <div className="w-full  overflow-hidden">
-          <InfoBanner data={movie} />
+          <InfoBanner data={data} />
         </div>
       )}
       {team?.cast?.length > 0 && (
@@ -147,7 +139,7 @@ const MovieWatch = () => {
           }
           list={suggestions}
           Card={Card}
-          media_type={media_type_enum.movie}
+          media_type={media_type_enum.data}
         />
       )}
       {similar && (
@@ -155,14 +147,14 @@ const MovieWatch = () => {
           children={<span>Similar to this</span>}
           list={similar}
           Card={Card}
-          media_type={media_type_enum.movie}
+          media_type={media_type_enum.data}
         />
       )}
     </div>
   );
 };
 
-export default MovieWatch;
+export default DetailsPage;
 
 const MapList = ({
   children = <></>,

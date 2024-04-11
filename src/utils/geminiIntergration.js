@@ -56,6 +56,7 @@ async function fetchSuggestion(media_type, name) {
   return response.text();
 }
 async function getSuggestions(media_type, name) {
+  console.log("fetching suggestions...", media_type, name);
   let query = media_type;
   if (media_type === "tv") {
     query = "tv series";
