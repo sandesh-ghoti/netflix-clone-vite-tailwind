@@ -139,7 +139,7 @@ const DetailsPage = ({ media_type }) => {
           }
           list={suggestions}
           Card={Card}
-          media_type={media_type_enum.data}
+          media_type={media_type}
         />
       )}
       {similar && (
@@ -147,7 +147,7 @@ const DetailsPage = ({ media_type }) => {
           children={<span>Similar to this</span>}
           list={similar}
           Card={Card}
-          media_type={media_type_enum.data}
+          media_type={media_type}
         />
       )}
     </div>
